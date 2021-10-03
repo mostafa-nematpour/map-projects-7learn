@@ -75,6 +75,7 @@
         <?php if ($location) : ?>
             L.marker([<?= $location->lat ?>, <?= $location->lng ?>])
                 .addTo(map).bindPopup("<?= $location->title ?>").openPopup();
+                map.setView([<?= $location->lat ?>, <?= $location->lng ?>], defaultZoom);
         <?php endif; ?>
         $(document).ready(function() {
 
