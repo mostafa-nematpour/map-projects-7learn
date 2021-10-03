@@ -1,11 +1,13 @@
-
 const defaultLocation = [36.5383108, 52.6722651];
 const defaultZoom = 15;
+
+var current_position, current_accuray;
+
 
 var map = L.map('map').setView(defaultLocation, defaultZoom);
 
 L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw', {
-    maxZoom: 20,
+    maxZoom: 25,
     attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, ' +
         'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
     id: 'mapbox/streets-v11',
@@ -13,34 +15,13 @@ L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_toke
     zoomOffset: -1
 }).addTo(map);
 
-// document.getElementById('map').style.setProperty('height', window.innerHeight+'px');
 
-
-// set view in map
-// map.setView([38.5383108, 58.6722651], defaultZoom);
+var markerGroup = L.layerGroup().addTo(map);
 
 // show and pin markers
 
-// L.marker([37.5383108, 53.6722651]).addTo(map).bindPopup("mostafa home2");
 // L.marker(defaultLocation).addTo(map).bindPopup("mostafa home").openPopup();
 
-
-
-// var northLine = map.getBounds().getNorth();
-// var westLine  = map.getBounds().getWest();
-// var southLine = map.getBounds().getSouth();
-// var eastLine  = map.getBounds().getEast();
-
-
-
-
-// setTimeout(function() {
-
-
-//     map.setView([southLine,westLine],defaultZoom);
-
-
-// },5000)
 
 map.on('dblclick', function (event) {
     // alert(event.latlng.lat+" "+event.latlng.lng);
@@ -52,28 +33,25 @@ map.on('dblclick', function (event) {
     $('#lng-display').val(event.latlng.lng);
     $('#l-type').val(0);
     $('#l-title').val('');
+    $('.ajax-result').html('');
     // 3  done: fill the form and locationdata to server
-
     // 4 done: save location in database (status : pending review) 
 
     // 5 : review locaction and verify if ok
 });
 
-var current_position, current_accuray;
 
 map.on('locationfound', function (e) {
     if (current_position) {
         map.removeLayer(current_position);
         map.removeLayer(current_accuray);
     }
-
     var radius = e.accuracy / 2;
     current_position = L.marker(e.latlng).addTo(map)
         .bindPopup(" دقت تقریبی " + radius + " متر ").openPopup();
     current_accuray = L.circle(e.latlng, radius).addTo(map);
-
-
 });
+
 map.on('locationerror', function (e) {
     console.log(e.message);
 });
@@ -94,6 +72,20 @@ function locate() {
 //     // 4 : show location markers in map window
 // });
 
+
+
+function showLocations(locations) {
+
+    markerGroup.clearLayers();
+    const Jlocations = JSON.parse(locations);
+
+    Jlocations.forEach(function (loc) {
+        L.marker([loc.lat, loc.lng]).bindPopup(loc.title).addTo(markerGroup);
+    });
+
+}
+
+
 $(document).ready(function () {
 
     $('form#addLocationForm').submit(function (e) {
@@ -110,8 +102,6 @@ $(document).ready(function () {
             }
         });
     });
-
-
 
     $('.modal-overlay .close').click(function () {
         $('.modal-overlay').fadeOut();

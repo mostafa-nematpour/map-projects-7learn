@@ -15,7 +15,12 @@
 <body>
     <div class="main">
         <div class="head">
-            <input type="text" id="search" placeholder="جستوجوی مکان ...">
+            <div class="search-box">
+                <input type="text" id="search" placeholder="دنبال کجا می گردی؟" autocomplete="off">
+                <div class="clear"></div>
+                <div class="search-results" style="display: none">
+                </div>
+            </div>
         </div>
         <div class="mapContainer">
             <div id="map"></div>
@@ -68,13 +73,53 @@
     <script src="assets/js/scripts.js"> </script>
     <script>
         <?php if ($location) : ?>
-            L.marker([<?= $location->lat ?>, <?= $location->lng ?>]).addTo(map).bindPopup("<?= $location->title ?>").openPopup();
-
+            L.marker([<?= $location->lat ?>, <?= $location->lng ?>])
+                .addTo(map).bindPopup("<?= $location->title ?>").openPopup();
         <?php endif; ?>
         $(document).ready(function() {
+
             $('img.currentLoc').click(function() {
                 locate();
             });
+
+            $('#search').keyup(function(e) {
+                const input = $(this);
+                const searchResults = $('.search-results');
+                searchResults.html('درحل جستجوی ... ');
+                $.ajax({
+                    url: '<?= BASE_URL . 'process/search.php' ?>',
+                    method: 'POST',
+                    data: {
+                        keyword: input.val()
+                    },
+                    success: function(response) {
+                        searchResults.slideDown('fast').html(response);
+                    }
+                });
+            });
+
+            map.on("moveend", getRange);
+            getRange();
+
+            function getRange(e) {
+                var northLine = map.getBounds().getNorth();
+                var westLine = map.getBounds().getWest();
+                var southLine = map.getBounds().getSouth();
+                var eastLine = map.getBounds().getEast();
+                $.ajax({
+                    url: '<?= BASE_URL . 'process/LocationsRange.php' ?>',
+                    method: 'GET',
+                    data: {
+                        "northLine": northLine,
+                        "westLine": westLine,
+                        "southLine": southLine,
+                        "eastLine": eastLine
+                    },
+                    success: function(response) {
+                        showLocations(response);
+                    }
+                });
+            }
         });
     </script>
 

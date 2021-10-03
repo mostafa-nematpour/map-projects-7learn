@@ -236,3 +236,8 @@ img.currentLoc:hover {
     text-decoration: none;
     color: #333;
 }
+
+.search-results a {
+    text-decoration: none;
+    color: #333;
+}
